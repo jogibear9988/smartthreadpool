@@ -574,6 +574,28 @@ namespace Amib.Threading
 			}
 		}
 
+        /// <summary>
+        /// Put a new work item in the queue
+        /// </summary>
+        /// <param name="workItem">A work item to queue</param>
+        internal override void InsertAtFirst(WorkItem workItem)
+        {
+            // Make sure the workItem is not null
+            Debug.Assert(null != workItem);
+
+            IncrementWorkItemsCount();
+
+            workItem.CanceledSmartThreadPool = _canceledSmartThreadPool;
+            _workItemsQueue.InsertAtFirstWorkItem(workItem);
+            workItem.WorkItemIsQueued();
+
+            // If all the threads are busy then try to create a new one
+            if (_currentWorkItemsCount > _workerThreads.Count)
+            {
+                StartThreads(1);
+            }
+        }
+
 		private void IncrementWorkItemsCount()
 		{
 			_windowsPCs.SampleWorkItems(_workItemsQueue.Count, _workItemsProcessed);

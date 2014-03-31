@@ -68,6 +68,23 @@ namespace Amib.Threading.Internal
 			++_version;
 		}
 
+        /// <summary>
+        /// InsertAtFirst a work item.
+        /// </summary>
+        /// <param name="workItem">A work item</param>
+        public void InsertAtFirst(IHasWorkItemPriority workItem)
+        {
+            Debug.Assert(null != workItem);
+
+            int queueIndex = _queuesCount - (int)workItem.WorkItemPriority - 1;
+            Debug.Assert(queueIndex >= 0);
+            Debug.Assert(queueIndex < _queuesCount);
+
+            _queues[queueIndex].AddFirst(workItem);
+            ++_workItemsCount;
+            ++_version;
+        }
+
 		/// <summary>
 		/// Dequeque a work item.
 		/// </summary>

@@ -175,6 +175,54 @@ namespace Amib.Threading.Internal
             return true;
 		}
 
+        /// <summary>
+        /// Enqueue a work item to the queue.
+        /// </summary>
+        public bool InsertAtFirstWorkItem(WorkItem workItem)
+		{
+			// A work item cannot be null, since null is used in the
+			// WaitForWorkItem() method to indicate timeout or cancel
+			if (null == workItem)
+			{
+				throw new ArgumentNullException("workItem" , "workItem cannot be null");
+			}
+
+			bool enqueue = true;
+
+			// First check if there is a waiter waiting for work item. During 
+			// the check, timed out waiters are ignored. If there is no 
+			// waiter then the work item is queued.
+			lock(this)
+			{
+                ValidateNotDisposed();
+
+                if (!_isWorkItemsQueueActive)
+                {
+                    return false;
+                }
+
+				while(_waitersCount > 0)
+				{
+					// Dequeue a waiter.
+					WaiterEntry waiterEntry = PopWaiter();
+
+					// Signal the waiter. On success break the loop
+					if (waiterEntry.Signal(workItem))
+					{
+						enqueue = false;
+						break;
+					}
+				}
+
+				if (enqueue)
+				{
+					// Enqueue the work item
+					_workItems.InsertAtFirst(workItem);
+				}
+			}
+            return true;
+		}
+
 
 		/// <summary>
 		/// Waits for a work item or exits on timeout or cancel

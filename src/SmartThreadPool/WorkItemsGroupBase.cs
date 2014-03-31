@@ -47,6 +47,7 @@ namespace Amib.Threading.Internal
         public abstract event WorkItemsGroupIdleHandler OnIdle;
 
         internal abstract void Enqueue(WorkItem workItem);
+        internal abstract void InsertAtFirst(WorkItem workItem);
         internal virtual void PreQueueWorkItem() { }
 
         #endregion
